@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  miaguila-db:
+    image: mysql:5.7
+    networks:
+      - miaguila-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=db_miaguila
+    ports:
+      - "33000:3306"
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d/:ro
+  miaguila-upload-file:
+    build: ./uploadFile
+    container_name: miaguila-upload-file
+    restart: always
+    ports:
+      - "5010:5000"
+    volumes:
+      - share-content:/shared_folder
+  miaguila-process-files:
+    build: ./processFiles
+    container_name: miaguila-process-files
+    restart: always
+    ports:
+      - "5011:5000"
+    volumes:
+      - share-content:/shared_folder
+networks:
+  miaguila-mysql:
+volumes:
+  share-content:
