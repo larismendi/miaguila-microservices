@@ -32,7 +32,7 @@ class ProcessFilesResource(Resource):
                             r = requests.get('https://api.postcodes.io/postcodes', params=payload)
                             data = r.json()
                             for d in data['result']:
-                                post = PostCodes.query.filter(PostCodes.postcode == d['postcode'])
+                                post = PostCodes.query.filter(PostCodes.postcode == d['postcode']).first()
                                 if post is None:
                                     process = PostCodes(
                                         postcode = d['postcode'],
