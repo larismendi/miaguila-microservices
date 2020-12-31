@@ -7,8 +7,7 @@ from datetime import datetime
 from microservice.models.init_db import db
 from microservice.models.models import UpdateFile, PostCodes
 
-# import os
-import pandas as pd
+import csv
 import requests
 
 process_v1_0_bp = Blueprint('process_v1_0_bp', __name__)
@@ -22,42 +21,43 @@ class ProcessFilesResource(Resource):
             duplicates = 0
             error = 400
             message = 'Error ubicando el archivo csv.'
-            df = pd.read_csv(query.path)
-            # path = os.getcwd() + '/test.csv'
-            # df = pd.read_csv(path)
-            for index, row in df.iterrows():
+            with open(query.path, 'r') as f:
                 try:
-                    x = [x.strip() for x in row[0].split(',')]
-                    payload = {'lat': x[0], 'lon': x[1]}
-                    r = requests.get('https://api.postcodes.io/postcodes', params=payload)
-                    data = r.json()
-                    for d in data['result']:
-                        post = PostCodes.query.filter(PostCodes.postcode == d['postcode'])
-                        if post is None:
-                            process = PostCodes(
-                                postcode = d['postcode'],
-                                outcode = d['outcode'],
-                                incode = d['incode'],
-                                quality = d['quality'],
-                                eastings = d['eastings'],
-                                northings = d['northings'],
-                                country = d['country'],
-                                nhs_ha = d['nhs_ha'],
-                                longitude = d['longitude'],
-                                latitude = d['latitude'],
-                                parish = d['parish'],
-                                codes = d['codes']
-                            )
-                            db.session.add(process)
-                            count += 1
-                        else:
-                            duplicates += 1
-                    db.session.commit()
+                    next(f)
+                    csv_reader = csv.reader(f, delimiter=',')
+                    for row in csv_reader:
+                        if row[0]:
+                            x = [x.strip() for x in row[0].split(',')]
+                            payload = {'lat': x[0], 'lon': x[1]}
+                            r = requests.get('https://api.postcodes.io/postcodes', params=payload)
+                            data = r.json()
+                            for d in data['result']:
+                                post = PostCodes.query.filter(PostCodes.postcode == d['postcode'])
+                                if post is None:
+                                    process = PostCodes(
+                                        postcode = d['postcode'],
+                                        outcode = d['outcode'],
+                                        incode = d['incode'],
+                                        quality = d['quality'],
+                                        eastings = d['eastings'],
+                                        northings = d['northings'],
+                                        country = d['country'],
+                                        nhs_ha = d['nhs_ha'],
+                                        longitude = d['longitude'],
+                                        latitude = d['latitude'],
+                                        parish = d['parish'],
+                                        codes = d['codes']
+                                    )
+                                    db.session.add(process)
+                                    count += 1
+                                else:
+                                    duplicates += 1
+                            db.session.commit()
                 except:
                     db.session.rollback()
                     message = 'Ocurrio un problema con la data.'
                     error = 500
-                    raise
+                    # raise
                 else:
                     query.processed_at = datetime.now()
                     query.save()
