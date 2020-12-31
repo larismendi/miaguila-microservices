@@ -1,4 +1,4 @@
-from flask import request, jsonify, make_response, Blueprint
+from flask import request, jsonify, make_response, current_app, Blueprint
 from flask_restful import Api, Resource
 from werkzeug.utils import secure_filename
 
@@ -11,7 +11,6 @@ uploads_v1_0_bp = Blueprint('uploads_v1_0_bp', __name__)
 
 upload_schema = UploadFileSchema()
 
-UPLOAD_FOLDER = '/shared_folder'
 ALLOWED_EXTENSIONS = {'csv'}
 
 
@@ -28,7 +27,7 @@ class UploadFileResource(Resource):
         
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            pathfile = os.path.join(UPLOAD_FOLDER, filename)
+            pathfile = os.path.join(current_app.config.get('APP_UPLOAD_FOLDER'), filename)
             file.save(pathfile)
 
             update_dict = upload_schema.load({
