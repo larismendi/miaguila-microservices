@@ -1,17 +1,13 @@
 FROM python:3.8-alpine
-
 WORKDIR /code
-
+ENV FLASK_RUN_HOST=0.0.0.0
+ENV FLASK_APP=entrypoint.py
+ENV FLASK_ENV=development
+ENV APP_SETTINGS_MODULE=config.default
 RUN apk add --no-cache gcc musl-dev linux-headers
-
 COPY requirements.txt requirements.txt
-
-RUN pip install --no-cache-dir -r requirements.txt
-
+RUN pip install -r requirements.txt
 EXPOSE 5000
-
 COPY . .
-
 COPY .flaskenv.example .flaskenv
-
 CMD ["flask", "run"]

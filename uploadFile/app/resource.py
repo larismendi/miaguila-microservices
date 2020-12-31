@@ -46,7 +46,7 @@ class UploadFileResource(Resource):
                 'data': resp
             })
 
-        return make_response(jsonify({'message': 'Se espera un archivo CSV.'}), 500)
+        return make_response(jsonify({'message': 'Se espera un archivo CSV.'}), 400)
 
 api = Api(uploads_v1_0_bp)
 

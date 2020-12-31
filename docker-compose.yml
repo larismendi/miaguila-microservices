@@ -18,6 +18,7 @@ services:
     ports:
       - "5010:5000"
     volumes:
+      - ./uploadFile:/code
       - share-content:/shared_folder
   miaguila-process-files:
     build: ./processFiles
@@ -26,6 +27,7 @@ services:
     ports:
       - "5011:5000"
     volumes:
+      - ./processFiles:/code
       - share-content:/shared_folder
 networks:
   miaguila-mysql:
